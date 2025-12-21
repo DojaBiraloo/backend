@@ -29,13 +29,16 @@ const userSchema = new mongoose.Schema(
     {timestamps: true}
 )
 
-// Password hashing
-userSchema.pre("save", async function (next){
-    if(!this.isModified("password")) return next();
+// Password hashing - Mongoose 9 compatible async hook
+userSchema.pre("save", async function (){
+    // Skip if password hasn't been modified
+    if(!this.isModified("password")) {
+        return;
+    }
 
-    const salt= await bcrypt.genSalt(10);
+    // Hash the password
+    const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    next();
 });
 
 // Match User entered pasword to hashed password

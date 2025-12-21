@@ -1,18 +1,29 @@
+// ✅ Load environment variables FIRST, before anything else
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
-
-
-
 const connectDB= require("./config/db");
 const userRoutes= require("./routes/userRoutes");
 
 const app = express();
-app.use(express.json());
+
+// CORS should be before body parsing
 app.use(cors());
 
-// ✅ Load environment variables FIRST, before anything else
-dotenv.config();
+// Body parsing middleware - must be before routes
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+    if (req.path.includes('/login') || req.path.includes('/register')) {
+        console.log(`\n=== ${req.method} ${req.path} ===`);
+        console.log('Content-Type header:', req.headers['content-type']);
+        console.log('All headers:', JSON.stringify(req.headers, null, 2));
+    }
+    next();
+});
 
 const PORT = process.env.PORT || 3000;
 
